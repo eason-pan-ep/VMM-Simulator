@@ -22,8 +22,10 @@ public:
     ~TLBEntry()= default;
 
     void printEntry(){
-        std::cout << "[TLB Entry - VPN" << this->VPN << " | PFN: " << this->PFN << " | ASID: " << this->ASID << " | validBit: " << (int)this->validBit << " | protectionBit: " << (int)this->protectionBit << " | presentBit: " << (int)this->presentBit << " | dirtyBit: " << (int)this->dirtyBit << " | referenceBit: " << (int)this->referenceBit << " ]";
+        std::cout << "[TLB Entry - VPN: " << this->VPN << " | PFN: " << this->PFN << " | ASID: " << this->ASID << " | validBit: " << (int)this->validBit << " | protectionBit: " << (int)this->protectionBit << " | presentBit: " << (int)this->presentBit << " | dirtyBit: " << (int)this->dirtyBit << " | referenceBit: " << (int)this->referenceBit << " ]\n";
     }
+
+
 };
 
 

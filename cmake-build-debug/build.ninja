@@ -102,6 +102,68 @@ build PTETests: CXX_EXECUTABLE_LINKER__PTETests_Debug CMakeFiles/PTETests.dir/te
   TARGET_FILE = PTETests
   TARGET_PDB = PTETests.dbg
 
+# =============================================================================
+# Object build statements for EXECUTABLE target pageTableTests
+
+
+#############################################
+# Order-only phony target for pageTableTests
+
+build cmake_object_order_depends_target_pageTableTests: phony || CMakeFiles/pageTableTests.dir
+
+build CMakeFiles/pageTableTests.dir/test/PageTableTests.cpp.o: CXX_COMPILER__pageTableTests_unscanned_Debug /Users/easonpan/Documents/Gits/5600-vvm/test/PageTableTests.cpp || cmake_object_order_depends_target_pageTableTests
+  DEP_FILE = CMakeFiles/pageTableTests.dir/test/PageTableTests.cpp.o.d
+  FLAGS = -g -std=gnu++17 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk -fcolor-diagnostics
+  OBJECT_DIR = CMakeFiles/pageTableTests.dir
+  OBJECT_FILE_DIR = CMakeFiles/pageTableTests.dir/test
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target pageTableTests
+
+
+#############################################
+# Link the executable pageTableTests
+
+build pageTableTests: CXX_EXECUTABLE_LINKER__pageTableTests_Debug CMakeFiles/pageTableTests.dir/test/PageTableTests.cpp.o
+  FLAGS = -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk
+  OBJECT_DIR = CMakeFiles/pageTableTests.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = pageTableTests
+  TARGET_PDB = pageTableTests.dbg
+
+# =============================================================================
+# Object build statements for EXECUTABLE target memoryTests
+
+
+#############################################
+# Order-only phony target for memoryTests
+
+build cmake_object_order_depends_target_memoryTests: phony || CMakeFiles/memoryTests.dir
+
+build CMakeFiles/memoryTests.dir/test/testMemory.cpp.o: CXX_COMPILER__memoryTests_unscanned_Debug /Users/easonpan/Documents/Gits/5600-vvm/test/testMemory.cpp || cmake_object_order_depends_target_memoryTests
+  DEP_FILE = CMakeFiles/memoryTests.dir/test/testMemory.cpp.o.d
+  FLAGS = -g -std=gnu++17 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk -fcolor-diagnostics
+  OBJECT_DIR = CMakeFiles/memoryTests.dir
+  OBJECT_FILE_DIR = CMakeFiles/memoryTests.dir/test
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target memoryTests
+
+
+#############################################
+# Link the executable memoryTests
+
+build memoryTests: CXX_EXECUTABLE_LINKER__memoryTests_Debug CMakeFiles/memoryTests.dir/test/testMemory.cpp.o
+  FLAGS = -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk
+  OBJECT_DIR = CMakeFiles/memoryTests.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = memoryTests
+  TARGET_PDB = memoryTests.dbg
+
 
 #############################################
 # Utility command for edit_cache
@@ -136,7 +198,7 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 #############################################
 # Folder: /Users/easonpan/Documents/Gits/5600-vvm/cmake-build-debug
 
-build all: phony 5600_vvm PTETests
+build all: phony 5600_vvm PTETests pageTableTests memoryTests
 
 # =============================================================================
 # Built-in targets

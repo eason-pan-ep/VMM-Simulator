@@ -10,7 +10,7 @@
 class PTE {
 public:
     int PFN; //physical frame name
-    bool validBit; // whether the translation is valid (allocated_
+    bool validBit; // whether the translation is valid (allocated)
     bool protectionBit; // is accessible
     bool presentBit; //is in physical memory
     bool dirtyBit; //is modified
@@ -29,7 +29,16 @@ public:
     ~PTE()= default;
 
     void printEntry(){
-        std::cout << "[PTE - PFN: " << this->PFN << " | validBit: " << (int)this->validBit << " | protectionBit: " << (int)this->protectionBit << " | presentBit: " << (int)this->presentBit << " | dirtyBit: " << (int)this->dirtyBit << " | referenceBit: " << (int)this->referenceBit << " ]";
+        std::cout << "[PTE - PFN: " << this->PFN << " | validBit: " << (int)this->validBit << " | protectionBit: " << (int)this->protectionBit << " | presentBit: " << (int)this->presentBit << " | dirtyBit: " << (int)this->dirtyBit << " | referenceBit: " << (int)this->referenceBit << " ]\n";
+    }
+
+    void reset(){
+        this->PFN = -1;
+        this->validBit = false;
+        this->protectionBit = false;
+        this->presentBit = false;
+        this->dirtyBit = false;
+        this->referenceBit = false;
     }
 
 
