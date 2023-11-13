@@ -4,10 +4,11 @@
 
 #ifndef INC_5600_VVM_PTE_H
 #define INC_5600_VVM_PTE_H
+#include <iostream>
 
 
 class PTE {
-private:
+public:
     int PFN; //physical frame name
     bool validBit; // whether the translation is valid (allocated_
     bool protectionBit; // is accessible
@@ -16,16 +17,24 @@ private:
     bool referenceBit; //has been accessed
 
 public:
-    PTE(int PFN){
+    PTE(int PFN, bool validBit= false, bool protectionBit= false, bool presentBit= false, bool dirtyBit= false, bool referenceBit= false){
         this->PFN = PFN;
-        this->validBit = false;
-        this->protectionBit = false;
-        this->presentBit = false;
-        this->dirtyBit = false;
-        this->referenceBit = false;
+        this->validBit = validBit;
+        this->protectionBit = protectionBit;
+        this->presentBit = presentBit;
+        this->dirtyBit = dirtyBit;
+        this->referenceBit = referenceBit;
     }
 
     ~PTE()= default;
+
+    void printEntry(){
+        std::cout << "[PTE - PFN: " << this->PFN << " | validBit: " << (int)this->validBit << " | protectionBit: " << (int)this->protectionBit << " | presentBit: " << (int)this->presentBit << " | dirtyBit: " << (int)this->dirtyBit << " | referenceBit: " << (int)this->referenceBit << " ]";
+    }
+
+
+
+
 };
 
 
