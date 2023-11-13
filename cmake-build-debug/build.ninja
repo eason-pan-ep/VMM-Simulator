@@ -164,6 +164,37 @@ build memoryTests: CXX_EXECUTABLE_LINKER__memoryTests_Debug CMakeFiles/memoryTes
   TARGET_FILE = memoryTests
   TARGET_PDB = memoryTests.dbg
 
+# =============================================================================
+# Object build statements for EXECUTABLE target TLBTests
+
+
+#############################################
+# Order-only phony target for TLBTests
+
+build cmake_object_order_depends_target_TLBTests: phony || CMakeFiles/TLBTests.dir
+
+build CMakeFiles/TLBTests.dir/test/TLBTests.cpp.o: CXX_COMPILER__TLBTests_unscanned_Debug /Users/easonpan/Documents/Gits/5600-vvm/test/TLBTests.cpp || cmake_object_order_depends_target_TLBTests
+  DEP_FILE = CMakeFiles/TLBTests.dir/test/TLBTests.cpp.o.d
+  FLAGS = -g -std=gnu++17 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk -fcolor-diagnostics
+  OBJECT_DIR = CMakeFiles/TLBTests.dir
+  OBJECT_FILE_DIR = CMakeFiles/TLBTests.dir/test
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target TLBTests
+
+
+#############################################
+# Link the executable TLBTests
+
+build TLBTests: CXX_EXECUTABLE_LINKER__TLBTests_Debug CMakeFiles/TLBTests.dir/test/TLBTests.cpp.o
+  FLAGS = -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk
+  OBJECT_DIR = CMakeFiles/TLBTests.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = TLBTests
+  TARGET_PDB = TLBTests.dbg
+
 
 #############################################
 # Utility command for edit_cache
@@ -198,7 +229,7 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 #############################################
 # Folder: /Users/easonpan/Documents/Gits/5600-vvm/cmake-build-debug
 
-build all: phony 5600_vvm PTETests pageTableTests memoryTests
+build all: phony 5600_vvm PTETests pageTableTests memoryTests TLBTests
 
 # =============================================================================
 # Built-in targets
