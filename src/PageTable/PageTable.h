@@ -77,7 +77,7 @@ public:
         if(!this->isInTable(VPN)){
             return -1;
         }
-        if(-1 == this->pageTable.at(VPN)->PFN){
+        if(!this->pageTable.at(VPN)->validBit){
             return -1;
         }
         this->pageTable.at(VPN)->reset();

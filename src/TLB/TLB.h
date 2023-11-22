@@ -5,13 +5,15 @@
 #ifndef INC_5600_VVM_TLB_H
 #define INC_5600_VVM_TLB_H
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
 #include "TLBEntry.h"
 #include "../PageTable/PTE.h"
 
 
 class TLB {
 private:
-    std::unordered_map<int, PTE*> buffer;
+    std::unordered_map<int, PTE*> buffer; // VPN, PTE
     int size;
     int level;
 
@@ -24,27 +26,86 @@ public:
         this->level = level;
     }
 
-    ~TLB() = default;
+    ~TLB(){
+        if(0 == this->buffer.size()){
+            this->buffer.clear();
+        }else{
+            for(auto& pair : this->buffer){
+                delete(pair.second);
+            }
+            this->buffer.clear();
+        }
+    }
 
     /**
-     * Add a new entry
+     * Add a new entry, if the TLB if full, replace an existing one using the selected policy
      * @param VPN
      * @param newPTE
-     * @return -1 if there is an error, otherwise 0.
+     * @return opCount.
      */
-    int addEntry(int VPN, PTE* newPTE){
+    int addEntry(int VPN, PTE* newPTE, std::string mode = "random"){
         if(newPTE == nullptr){
             throw std::invalid_argument("Can't add null PTE to TLB\n");
         }
-        if(this->buffer.size() == this->size){
-            return -1;
+        if(this->buffer.size() == this->size){ //TLB is full
+            return this->reaplace(VPN, newPTE);
         }
         this->buffer.insert({VPN, newPTE});
-        return 0;
+        return 1;
     }
 
-    int removeEntry(int VPN){
-        return 0;
+    void printTLB(){
+        std::cout << "TLB Info: \n";
+        std::cout << "TLB Size: " << this->size << "\n";
+        if(0 == this->buffer.size()){
+            std::cout << "Empty TLB\n";
+        }
+        for(auto& pair : this->buffer){
+            std::cout << "VPN: " << pair.first << " | PTE: ";
+            pair.second->printEntry();
+        }
+    }
+
+private:
+
+    /**
+     * Remove an entry
+     * @param VPN
+     * @return opCount
+     */
+    int reaplace(int VPN, PTE* newPTE, std::string mode = "random"){
+        if(newPTE == nullptr){
+            throw std::invalid_argument("newPTE is null [TLB->replace()]\n");
+        }
+        int opCount = 0;
+        int removeVPN = -1;
+        if(mode == "random"){
+            removeVPN = this->randomPolicy();
+            opCount += 1;
+        }
+
+
+        this->buffer.erase(removeVPN);
+        opCount += 1;
+
+        this->buffer.insert({VPN, newPTE});
+        opCount += 1;
+
+        return opCount;
+    }
+
+    /**
+     * random replacement policy
+     * @return the VPN of the selected entry to delete
+     */
+    int randomPolicy(){
+        std::vector<int> keys;
+        for(auto& pair : this->buffer){
+            keys.push_back(pair.first);
+        }
+        std::srand(std::time(nullptr));
+        int removeIndex = std::rand() % (keys.size() + 1);
+        return keys.at(removeIndex);
     }
 
 };
