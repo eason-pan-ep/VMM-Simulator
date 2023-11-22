@@ -22,13 +22,27 @@ int main(){
     test->addEntry(9029203, new PTE(472938423));
     test->printTLB();
 
+    std::cout << "------ A TLB Hit ------ \n";
+    int res = test->lookup(9029203);
+    std::string TLBT = "TLB Hit";
+    if(-1 == res){
+        TLBT = "TLB Miss";
+    }
+    std::cout << "Result: " << TLBT << "\n";
+
     std::cout << "------ Replaced another entry ------ \n";
     test->addEntry(234234823, new PTE(123912038120));
     test->printTLB();
 
+    std::cout << "------ Try TLB Miss ------ \n";
+    res = test->lookup(10);
+    if(-1 == res){
+        TLBT = "TLB Miss";
+    }
+    std::cout << "Result: " << TLBT << "\n";
+
+    delete(test);
 
     return 0;
-
-
 
 }

@@ -66,8 +66,19 @@ public:
         }
     }
 
-private:
+    /**
+     * lookup for a specific entry based on the given VPN
+     * @param VPN
+     * @return opCount, if return -1 means a TLB miss
+     */
+    int lookup(int VPN){
+        if(this->buffer.find(VPN) == this->buffer.end()){
+            return -1; // TLB Miss
+        }
+        return 1;
+    }
 
+private:
     /**
      * Remove an entry
      * @param VPN
