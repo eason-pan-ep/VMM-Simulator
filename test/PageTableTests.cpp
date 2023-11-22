@@ -7,8 +7,9 @@
 int main(){
     PageTable* test = new PageTable(40);
     test->printPageTable();
-    std::pair addRes = test->addEntry(23029320);
-    std::cout << "addEntry Result --> VPN: " << addRes.first << ", opCount: " << addRes.second << "\n";
+    std::pair addRes = test->addEntry(3489);
+    std::cout << "addEntry Result --> VPN: " << addRes.first;
+    std::cout << ", opCount: " << addRes.second << "\n";
     test->printPageTable();
     std::cout << "\nPerform a walk: \n";
     test->walk(addRes.first)->printEntry();

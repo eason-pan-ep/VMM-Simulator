@@ -19,11 +19,11 @@ int main(){
     test->printTLB();
 
     std::cout << "------ Replaced one entry ------ \n";
-    test->addEntry(9029203, new PTE(472938423));
+    test->addEntry(20, new PTE(30));
     test->printTLB();
 
     std::cout << "------ A TLB Hit ------ \n";
-    int res = test->lookup(9029203);
+    int res = test->lookup(20);
     std::string TLBT = "TLB Hit";
     if(-1 == res){
         TLBT = "TLB Miss";
@@ -31,7 +31,7 @@ int main(){
     std::cout << "Result: " << TLBT << "\n";
 
     std::cout << "------ Replaced another entry ------ \n";
-    test->addEntry(234234823, new PTE(123912038120));
+    test->addEntry(23, new PTE(14));
     test->printTLB();
 
     std::cout << "------ Try TLB Miss ------ \n";

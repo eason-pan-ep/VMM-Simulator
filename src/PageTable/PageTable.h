@@ -5,6 +5,7 @@
 #ifndef INC_5600_VVM_PAGETABLE_H
 #define INC_5600_VVM_PAGETABLE_H
 #include <iostream>
+#include <sstream>
 #include "PTE.h"
 #include "../PhysicalMemory/PhysicalMemory.h"
 
@@ -112,7 +113,7 @@ public:
 
         std::cout << "Page Table: \n";
         for(int i = 0; i < this->pageTable.size(); i++){
-            std::cout << "Index: " << i << " --> ";
+            std::cout << "VPN: " << i <<  " --> ";
             this->pageTable.at(i)->printEntry();
         }
     }
