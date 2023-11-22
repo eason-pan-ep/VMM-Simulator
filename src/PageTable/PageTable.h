@@ -61,6 +61,7 @@ public:
             if(-1 == this->pageTable.at(i)->PFN){
                 this->pageTable.at(i)->use(PFN);
                 output.first = i;
+                break;
             }
         }
         return output;
@@ -73,6 +74,9 @@ public:
      * @return -1 if failed, otherwise 1;
      */
     int resetEntry(int VPN){
+        if(!this->isInTable(VPN)){
+            return -1;
+        }
         if(-1 == this->pageTable.at(VPN)->PFN){
             return -1;
         }

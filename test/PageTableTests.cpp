@@ -4,33 +4,19 @@
 #include "../src/PageTable/PageTable.h"
 #include <iostream>
 
-
-
 int main(){
-    PageTable* testPT = new PageTable(16);
-    std::cout << "empty table print: ";
-    testPT->printPageTable();
+    PageTable* test = new PageTable(40);
+    test->printPageTable();
+    std::pair addRes = test->addEntry(23029320);
+    std::cout << "addEntry Result --> VPN: " << addRes.first << ", opCount: " << addRes.second << "\n";
+    test->printPageTable();
+    std::cout << "\nPerform a walk: \n";
+    test->walk(addRes.first)->printEntry();
+    std::cout << "\nRest the added entry: \n";
+    test->resetEntry(addRes.first);
+    test->printPageTable();
 
-    for(int i = 0; i < 4; i++){
-        testPT->addEntry();
-    }
-    std::cout << "Initial Table: \n";
-    testPT->printPageTable();
-
-    testPT->translate(8, 100001);
-    testPT->translate(12, 120000);
-    std::cout << "8 & 12 translated: \n";
-    testPT->printPageTable();
-
-    testPT->translate(8, -1);
-    std::cout << "8 reset: \n";
-    testPT->printPageTable();
-
-    PTE* find = testPT->walk(12);
-    std::cout << "walk with 12: \n";
-    find->printEntry();
-
-    delete(testPT);
+    delete(test);
 
     return 0;
 }
