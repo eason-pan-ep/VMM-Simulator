@@ -5,7 +5,7 @@
 #ifndef INC_5600_VVM_TLBENTRY_H
 #define INC_5600_VVM_TLBENTRY_H
 #include <iostream>
-#include "PTE.h"
+#include "../PageTable/PTE.h"
 
 
 class TLBEntry : public PTE{

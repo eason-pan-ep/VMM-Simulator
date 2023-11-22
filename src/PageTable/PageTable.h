@@ -6,6 +6,7 @@
 #define INC_5600_VVM_PAGETABLE_H
 #include <iostream>
 #include "PTE.h"
+#include "../PhysicalMemory/PhysicalMemory.h"
 
 /**
  * This class represents a VM Page Table.
@@ -27,7 +28,7 @@ public:
         }
         this->tableSize = tableSize;
         this->pageSize = pageSize;
-
+        this->initializePageTable();
     }
 
     ~PageTable(){
@@ -37,16 +38,48 @@ public:
         this->pageTable.clear();
     }
 
+private:
+    void initializePageTable(){
+        int chunks = this->tableSize / this->pageSize;
+        for(int i = 0; i < chunks; i++){
+            PTE* newPTE = new PTE(-1);
+            this->pageTable.push_back(newPTE);
+        }
+    }
+
+public:
     /**
      * Add a new Page Table Entry
-     * @param PFN
-     * @return operation count
+     * @return (VPN, opCount)
      */
-    int addEntry(int PFN=-1){
-        PTE* newEntry = new PTE(PFN);
-        this->pageTable.push_back(newEntry);
+    std::pair<int, int> addEntry(int PFN){
+        std::pair<int, int> output;
+        output.first = -1;
+        output.second = 0;
+        for(int i = 0; i < this->pageTable.size(); i++){
+            output.second += 1;
+            if(-1 == this->pageTable.at(i)->PFN){
+                this->pageTable.at(i)->use(PFN);
+                output.first = i;
+            }
+        }
+        return output;
+    }
+
+
+    /**
+     * Reset the entry at given VPN
+     * @param VPN
+     * @return -1 if failed, otherwise 1;
+     */
+    int resetEntry(int VPN){
+        if(-1 == this->pageTable.at(VPN)->PFN){
+            return -1;
+        }
+        this->pageTable.at(VPN)->reset();
         return 1;
     }
+
 
 
     /**
@@ -66,29 +99,6 @@ public:
             }
         }
         return nullptr;
-    }
-
-    /**
-     * update page at certain VPN to new PFN
-     * PFN will be -1, if it's a de-allocation operation
-     * @param VPN
-     * @param PFN
-     * @return -1 for error, 0 for success
-     */
-    int translate(int VPN, int PFN){
-        if(!this->isInTable(VPN)){
-            return -1;
-        }
-        int index = this->convertVPNToIndex(VPN);
-        if(-1 == PFN){
-            this->pageTable.at(index)->reset();
-        }else{
-            this->pageTable.at(index)->PFN = PFN;
-            this->pageTable.at(index)->validBit = true;
-            this->pageTable.at(index)->presentBit = true;
-        }
-        return 0;
-
     }
 
     void printPageTable(){

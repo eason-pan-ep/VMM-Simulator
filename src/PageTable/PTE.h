@@ -32,6 +32,12 @@ public:
         std::cout << "[PTE - PFN: " << this->PFN << " | validBit: " << (int)this->validBit << " | protectionBit: " << (int)this->protectionBit << " | presentBit: " << (int)this->presentBit << " | dirtyBit: " << (int)this->dirtyBit << " | referenceBit: " << (int)this->referenceBit << " ]\n";
     }
 
+    void use(int PFN){
+        this->PFN = PFN;
+        this->validBit = true;
+        this->presentBit = true;
+    }
+
     void reset(){
         this->PFN = -1;
         this->validBit = false;
