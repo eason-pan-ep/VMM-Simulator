@@ -18,7 +18,7 @@ private:
     int level;
 
 public:
-    TLB(int size = 128, int level = 1){
+    TLB(int size = 64, int level = 1){
         if(size > 256){
             throw std::invalid_argument("TLB size greater than 256 is too ideal.\n");
         }

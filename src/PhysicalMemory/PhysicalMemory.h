@@ -17,7 +17,7 @@ private:
     std::vector<int> memory;
 
 public:
-    PhysicalMemory(int memorySize=67108864, int pageSize=4){
+    PhysicalMemory(int memorySize=2048, int pageSize=4){
         if(memorySize > INT_MAX){
             throw std::invalid_argument("Given memory size exceeds INT_MAX, try something smaller\n");
         }

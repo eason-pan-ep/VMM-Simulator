@@ -20,7 +20,7 @@ private:
     int pageSize;
 
 public:
-    PageTable(int tableSize, int pageSize=4){
+    PageTable(int tableSize=2048, int pageSize=4){
         if(tableSize < pageSize){
             throw std::invalid_argument("tableSize should be greater than pageSize!\n");
         }
