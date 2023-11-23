@@ -10,9 +10,10 @@
 
 
 class PhysicalMemory {
-    int memorySize;
-    int pageSize;
+private:
     int currentAt;
+    int totalChunks;
+    int pageSize;
     std::vector<int> memory;
 
 public:
@@ -26,12 +27,12 @@ public:
         if(pageSize < 0 || memorySize < 0){
             throw std::invalid_argument("page size and memory size should both be positive integers\n");
         }
-        this->memorySize = memorySize;
-        this->pageSize = pageSize;
+        if(memorySize % pageSize != 0){
+            throw std::invalid_argument("memory size should be able to be divided by the page size\n");
+        }
         this->currentAt = 0;
-        this->initializeMemory();
-
-
+        this->totalChunks = memorySize / pageSize - 1;
+        this->pageSize = pageSize;
     }
 
     ~PhysicalMemory(){
@@ -44,19 +45,27 @@ public:
      * @return PFN, -1 if the memory is full
      */
     int findOneChunk(){
-        if(this->currentAt > (this->memorySize / this->pageSize)){
+        if(this->currentAt > this->totalChunks){ //check whether the memory is full
             return -1;
         }
-        int res = this->memory.at(this->currentAt);
+        int res = this->currentAt * this->pageSize;
+        this->memory.push_back(res);
         this->currentAt += 1;
         return res;
     }
 
-private:
-    void initializeMemory(){
-        for(int i = 0; i < (this->memorySize / this->pageSize); i++){
-            this->memory.at(i) = 4 * i;
+    void printMemory(){
+        std::cout << "Current Memory Status:\n";
+        if(0 == this->currentAt){
+            std::cout << "Empty Memory\n";
+        }else{
+            for(int i = 0; i < this->memory.size(); i++){
+                std::cout << "Address: " << this->memory.at(i) << "\n";
+            }
         }
+        std::cout << "------------------\n";
+        std::cout << "Current Pointer at: " << this->currentAt << "\n";
+        std::cout << "Remains " << this->totalChunks - this->currentAt << " chunks\n";
     }
 
 };
