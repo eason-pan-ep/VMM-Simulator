@@ -26,9 +26,10 @@ private:
     std::unordered_map<std::string, int> speedFactors; // how much a specific type of operation should multiply when calculating speed
     std::string TLBReplacePolicy; // the policy used to replace TLB entries
     std::string workloadType; // the type of workload
+    double repeatingRate; // the repeating rate of the workload, for logging purpose
 
 public:
-    VMM(int memorySize=2048, int pageSize=4, int pageTableSize=2048, int TLBSize=64, int TLBTotalLevels=1, std::string TLBReplacePolicy="random", std::string workloadType="random"){
+    VMM(int TLBSize=64, std::string workloadType="random", std::string TLBReplacePolicy="random", int memorySize=8192, int pageSize=4, int pageTableSize=8192, int TLBTotalLevels=1){
         this->physicalMemory = new PhysicalMemory(memorySize, pageSize);
         this->pageTable = new PageTable(pageTableSize, pageSize);
         this->tlb = new TLB(TLBSize, TLBTotalLevels);
@@ -36,6 +37,7 @@ public:
         this->pageSize = pageSize;
         this->TLBReplacePolicy = TLBReplacePolicy;
         this->workloadType = workloadType;
+        this->repeatingRate = 0.0;
 
         //initialize counters
         this->counters.insert({"TLB Hit", 0});
@@ -45,6 +47,8 @@ public:
         this->counters.insert({"TLB Access Count", 0});
         this->counters.insert({"Page Fault Count", 0});
         this->counters.insert({"Total Access Count", 0});
+        this->counters.insert({"TLB Time", 0});
+        this->counters.insert({"Memory Time", 0});
 
         //initialize speed factors
         this->speedFactors.insert({"Level 1 TLB", 1});
@@ -63,13 +67,18 @@ public:
     }
 
 public:
-    void runSimulation(int totalRequets=10){
+    /**
+     * Run the simulation
+     * @param totalRequests
+     */
+    void runSimulation(int totalRequests=10, std::string exportMode="console"){
         std::vector<int> workload;
         //generate different type of workload based on input
         if("random" == this->workloadType){ // random workload
-            workload = this->generateRandomWorkLoad(totalRequets);
+            workload = this->generateRandomWorkLoad(totalRequests);
         }
-        this->printWorkLoad(workload);
+        // store repeated addresses rate
+        this->repeatingRate = this->calculateRepeatingRate(workload);
 
         for(int VPN : workload){
             if(-1 != this->tlb->lookup(VPN)){ //if it's a TLB hit
@@ -104,13 +113,21 @@ public:
         }
 
         //print out the result
-        this->printResult();
-
-
+        if("console" == exportMode){
+            this->printWorkLoad(workload);
+            this->printResult();
+        }else if("csv" == exportMode){
+            this->CSVFriendlyResults();
+        }
     }
 
 
 private:
+    /**
+     * Generate a random workload
+     * @param totalRequests
+     * @return a vector of VPNs
+     */
     std::vector<int> generateRandomWorkLoad(int totalRequests){
         std::srand(std::time(nullptr)); //initialize a seed
         if(totalRequests < 0 ){
@@ -133,20 +150,39 @@ private:
         return workload;
     }
 
+
+    /**
+     * Print out the result
+     */
     void printResult(){
         std::cout << "================== Result ==================\n";
-        std::cout << "Total Access: " << std::dec << this->counters["Total Access Count"]  << " times" << "\n";
-        std::cout << "Workload Type: " << this->workloadType << "\n";
         std::cout << "TLB Replacement Policy: " << this->TLBReplacePolicy << "\n";
+        std::cout << "TLB Size: " << std::dec << this->tlb->getSize() << " entries" << "\n";
         std::cout << "----------- TLB Hit Rate -----------\n";
         std::cout << "TLB Hit Count: " << this->counters["TLB Hit"] << "\n";
         std::cout << "TLB Miss Count: " << this->counters["TLB Miss"] << "\n";
-        std::cout << "TLB Hit Rate: " << (double)this->counters["TLB Hit"] / (double)(this->counters["TLB Hit"] + this->counters["TLB Miss"]) << "\n";
+        std::cout << "TLB Hit Rate: " << (double)this->counters["TLB Hit"] / (double)this->counters["Total Access Count"] << "\n";
         std::cout << "----------- Page Fault Rate -----------\n";
         std::cout << "Page Fault Count: " << this->counters["Page Fault Count"] << "\n";
-        std::cout << "Page Fault Rate: " << (double)this->counters["Page Fault Count"] / (double)(this->counters["TLB Hit"] + this->counters["TLB Miss"]) << "\n";
+        std::cout << "Page Fault Rate: " << (double)this->counters["Page Fault Count"] / (double)this->counters["Total Access Count"] << "\n";
 
         //calculate the total time based on access count and speed factors
+        this->calculateTime();
+
+        int totalTime = this->counters["TLB Time"] + this->counters["Memory Time"];
+        std::cout << "----------- Total Time -----------\n";
+        std::cout << "Speed Factors -- " << "Memory Access Speed : TLB Speed = " << this->speedFactors["Memory"] << " : " << this->speedFactors["Level 1 TLB"] <<"\n";
+        std::cout << "TLB Access Count: " << this->counters["TLB Access Count"] << "\n";
+        std::cout << "Memory Access Count: " << this->counters["Memory Access Count"] << "\n";
+        std::cout << "Total Time: " << totalTime << "\n";
+        std::cout << "TLB Time: " << this->counters["TLB Time"] << "\n";
+        std::cout << "Memory Time: " << this->counters["Memory Time"] << "\n";
+
+        std::cout << "------------------------------------------\n";
+    }
+
+
+    void calculateTime(){
         int TLBTime = 0;
         int memoryTime = 0;
         for(auto const& [key, val] : this->counters){
@@ -156,24 +192,38 @@ private:
                 memoryTime += val * this->speedFactors["Memory"];
             }
         }
-        int totalTime = TLBTime + memoryTime;
-        std::cout << "----------- Total Time -----------\n";
-        std::cout << "Speed Factors -- " << "Memory Access Speed : TLB Speed = " << this->speedFactors["Memory"] << " : " << this->speedFactors["Level 1 TLB"] <<"\n";
-        std::cout << "TLB Access Count: " << this->counters["TLB Access Count"] << "\n";
-        std::cout << "Memory Access Count: " << this->counters["Memory Access Count"] << "\n";
-        std::cout << "Total Time: " << totalTime << "\n";
-        std::cout << "TLB Time: " << TLBTime << "\n";
-        std::cout << "Memory Time: " << memoryTime << "\n";
-
-        std::cout << "============================================\n";
+        this->counters["TLB Time"] = TLBTime;
+        this->counters["Memory Time"] = memoryTime;
     }
 
+    /**
+     * Print out the result in CSV friendly format
+     * the columns are:
+     * Workload Type, Total Access Count, Repeated Addresses Rate, TLB Replacement Policy, TLB Size, TLB Hit Count, TLB Miss Count, TLB Hit Rate, Page Fault Count, Page Fault Rate, TLB Access Count, Memory Access Count, Total Time, TLB Time, Memory Time
+     */
+    void CSVFriendlyResults(){
+        this->calculateTime();
+        std::cout << this->workloadType << "," << this->counters["Total Access Count"] << "," << this->repeatingRate << "," << this->TLBReplacePolicy << "," << this->tlb->getSize() << "," << this->counters["TLB Hit"] << "," << this->counters["TLB Miss"] << "," << (double)this->counters["TLB Hit"] / (double)this->counters["Total Access Count"] << "," << this->counters["Page Fault Count"] << "," << (double)this->counters["Page Fault Count"] / (double)(this->counters["Total Access Count"]) << "," << this->counters["TLB Access Count"] << "," << this->counters["Memory Access Count"] << "," << this->counters["TLB Time"] + this->counters["Memory Time"] << "," << this->counters["TLB Time"] << "," << this->counters["Memory Time"] << "\n";
+
+    }
+
+
+    /**
+     * Print out the workload
+     * @param workload
+     */
     void printWorkLoad(std::vector<int> workload){
+        std::cout << "----------- Workload Summary -----------\n";
+        std::cout << "Workload Type: " << this->workloadType << "\n";
+        std::cout << "Total Access: " << this->counters["Total Access Count"]  << " times" << "\n";
+        std::cout << "Repeated Addresses Rate: " << this->repeatingRate << "\n";
+
         std::cout << "Workload (VPN to access): \n[ ";
         for (int work: workload)
-            std::cout << std::hex << std::setw(8) << std::setfill('O') << work << ", ";
+            std::cout << std::hex << std::setw(8) << std::setfill('0') << work << ", ";
 
         std::cout << "]\n";
+
     }
 
     /**
@@ -190,6 +240,29 @@ private:
         return PFN;
     }
 
+
+    /**
+     * Calculate the repeating rate of the workload
+     * @param workload
+     * @return the memory access address repeating rate
+     */
+    double calculateRepeatingRate(std::vector<int> workload){
+        std::unordered_map<int, int> counter;
+        for(int VPN : workload){
+            if(counter.find(VPN) == counter.end()){
+                counter.insert({VPN, 1});
+            }else{
+                counter[VPN] += 1;
+            }
+        }
+        int repeatingCount = 0;
+        for(auto const& [key, val] : counter){
+            if(val > 1){
+                repeatingCount += 1;
+            }
+        }
+        return (double)repeatingCount / (double)workload.size();
+    }
 
 
 

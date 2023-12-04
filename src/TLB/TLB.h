@@ -19,8 +19,8 @@ private:
 
 public:
     TLB(int size = 64, int level = 1){
-        if(size > 256){
-            throw std::invalid_argument("TLB size greater than 256 is too ideal.\n");
+        if(size > 1024){
+            throw std::invalid_argument("TLB size greater than 1024 is too ideal.\n");
         }
         this->size = size;
         this->level = level;
@@ -69,6 +69,14 @@ public:
             return -1; // TLB Miss
         }
         return 1; //TLB Hit
+    }
+
+    /**
+     * Get the size of the TLB
+     * @return
+     */
+    int getSize() const{
+        return this->size;
     }
 
 private:
