@@ -27,14 +27,7 @@ public:
     }
 
     ~TLB(){
-        if(0 == this->buffer.size()){
             this->buffer.clear();
-        }else{
-            for(auto& pair : this->buffer){
-                delete(pair.second);
-            }
-            this->buffer.clear();
-        }
     }
 
     /**
@@ -48,7 +41,7 @@ public:
             throw std::invalid_argument("Can't add null PTE to TLB\n");
         }
         if(this->buffer.size() == this->size){ //TLB is full
-            return this->reaplace(VPN, newPTE);
+            return this->replace(VPN, newPTE);
         }
         this->buffer.insert({VPN, newPTE});
         return 1;
@@ -75,7 +68,7 @@ public:
         if(this->buffer.find(VPN) == this->buffer.end()){
             return -1; // TLB Miss
         }
-        return 1;
+        return 1; //TLB Hit
     }
 
 private:
@@ -84,7 +77,7 @@ private:
      * @param VPN
      * @return opCount
      */
-    int reaplace(int VPN, PTE* newPTE, std::string mode = "random"){
+    int replace(int VPN, PTE* newPTE, std::string mode = "random"){
         if(newPTE == nullptr){
             throw std::invalid_argument("newPTE is null [TLB->replace()]\n");
         }

@@ -195,37 +195,6 @@ build TLBTests: CXX_EXECUTABLE_LINKER__TLBTests_Debug CMakeFiles/TLBTests.dir/te
   TARGET_FILE = TLBTests
   TARGET_PDB = TLBTests.dbg
 
-# =============================================================================
-# Object build statements for EXECUTABLE target SimpleRequestTest
-
-
-#############################################
-# Order-only phony target for SimpleRequestTest
-
-build cmake_object_order_depends_target_SimpleRequestTest: phony || CMakeFiles/SimpleRequestTest.dir
-
-build CMakeFiles/SimpleRequestTest.dir/test/SimpleRequestTests.cpp.o: CXX_COMPILER__SimpleRequestTest_unscanned_Debug /Users/easonpan/Documents/Gits/5600-vvm/test/SimpleRequestTests.cpp || cmake_object_order_depends_target_SimpleRequestTest
-  DEP_FILE = CMakeFiles/SimpleRequestTest.dir/test/SimpleRequestTests.cpp.o.d
-  FLAGS = -g -std=gnu++17 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk -fcolor-diagnostics
-  OBJECT_DIR = CMakeFiles/SimpleRequestTest.dir
-  OBJECT_FILE_DIR = CMakeFiles/SimpleRequestTest.dir/test
-
-
-# =============================================================================
-# Link build statements for EXECUTABLE target SimpleRequestTest
-
-
-#############################################
-# Link the executable SimpleRequestTest
-
-build SimpleRequestTest: CXX_EXECUTABLE_LINKER__SimpleRequestTest_Debug CMakeFiles/SimpleRequestTest.dir/test/SimpleRequestTests.cpp.o
-  FLAGS = -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk
-  OBJECT_DIR = CMakeFiles/SimpleRequestTest.dir
-  POST_BUILD = :
-  PRE_LINK = :
-  TARGET_FILE = SimpleRequestTest
-  TARGET_PDB = SimpleRequestTest.dbg
-
 
 #############################################
 # Utility command for edit_cache
@@ -260,7 +229,7 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 #############################################
 # Folder: /Users/easonpan/Documents/Gits/5600-vvm/cmake-build-debug
 
-build all: phony 5600_vvm PTETests pageTableTests memoryTests TLBTests SimpleRequestTest
+build all: phony 5600_vvm PTETests pageTableTests memoryTests TLBTests
 
 # =============================================================================
 # Built-in targets

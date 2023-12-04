@@ -51,21 +51,12 @@ private:
 public:
     /**
      * Add a new Page Table Entry
-     * @return (VPN, opCount)
      */
-    std::pair<int, int> addEntry(int PFN){
-        std::pair<int, int> output;
-        output.first = -1;
-        output.second = 0;
-        for(int i = 0; i < this->pageTable.size(); i++){
-            output.second += 1;
-            if(-1 == this->pageTable.at(i)->PFN){
-                this->pageTable.at(i)->use(PFN);
-                output.first = i;
-                break;
-            }
-        }
-        return output;
+    void addEntry(int VPN, int PFN){
+        int index = this->convertVPNToIndex(VPN);
+        this->pageTable.at(index)->PFN = PFN;
+        this->pageTable.at(index)->validBit = true;
+        this->pageTable.at(index)->presentBit = true;
     }
 
 
@@ -90,7 +81,7 @@ public:
     /**
      * perform a page table walk
      * @param VPN the Virtual page name
-     * @return
+     * @return nullptr if not exist, otherwise, the PTE
      */
     PTE* walk(int VPN){
         if(!this->isInTable(VPN)){
