@@ -210,7 +210,7 @@ private:
 
         int totalTime = this->counters["TLB Time"] + this->counters["Memory Time"];
         std::cout << "----------- Total Time -----------\n";
-        std::cout << "Speed Factors -- " << "Memory Access Speed : TLB Speed = " << this->speedFactors["Memory"] << " : " << this->speedFactors["Level 1 TLB"] <<"\n";
+        std::cout << "Speed Factors -- " << "TLB Speed : Memory Speed = " << this->speedFactors["Memory"] << " : " << this->speedFactors["Level 1 TLB"] <<"\n";
         std::cout << "TLB Access Count: " << this->counters["TLB Access Count"] << "\n";
         std::cout << "Memory Access Count: " << this->counters["Memory Access Count"] << "\n";
         std::cout << "Total Time: " << totalTime << "\n";
