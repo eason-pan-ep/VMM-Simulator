@@ -76,6 +76,8 @@ public:
         //generate different type of workload based on input
         if("random" == this->workloadType){ // random workload
             workload = this->generateRandomWorkLoad(totalRequests);
+        }else if("game" == this->workloadType){ // game workload
+            workload = this->generateGameWorkLoad(totalRequests);
         }
         // store repeated addresses rate
         this->repeatingRate = this->calculateRepeatingRate(workload);
@@ -144,6 +146,43 @@ private:
         for( int chunkCount : chunks){
             for(int i = 0; i < chunkCount; i++){
                 workload.push_back(std::rand() % (this->pageTableSize + 1) / this->pageSize); //random address
+                this->counters["Total Access Count"] += 1;
+            }
+        }
+        return workload;
+    }
+
+
+    /**
+     * Generate a workload with high locality, 80% of the addresses are repeated
+     * @param totalRequests
+     * @return a vector of VPNs
+     */
+    std::vector<int> generateGameWorkLoad(int totalRequests){
+        std::srand(std::time(nullptr)); //initialize a seed
+        if(totalRequests < 0 ){
+            throw std::invalid_argument("Total Request Count should be a positive integer\n");
+        }
+        std::vector<int> chunks;
+        std::vector<int> workload;
+
+        for(int i = 0; i < totalRequests; i++){
+            //random pick number of chunks adding to workload
+            chunks.push_back(std::rand() % (MAX_CHUNK + 1));
+        }
+        // randomly add accessing address to workload list with 80% of the addresses are repeated
+        for( int chunkCount : chunks){
+            for(int i = 0; i < chunkCount; i++){
+                if(std::rand() % 100 < 80){ // 80% of the addresses are repeated
+                    if(workload.empty()){
+                        workload.push_back(std::rand() % (this->pageTableSize + 1) / this->pageSize); //random address
+                    }else{
+                        workload.push_back(workload.at(std::rand() % workload.size()));
+                    }
+
+                }else{
+                    workload.push_back(std::rand() % (this->pageTableSize + 1) / this->pageSize); //random address
+                }
                 this->counters["Total Access Count"] += 1;
             }
         }
@@ -258,7 +297,7 @@ private:
         int repeatingCount = 0;
         for(auto const& [key, val] : counter){
             if(val > 1){
-                repeatingCount += 1;
+                repeatingCount += val;
             }
         }
         return (double)repeatingCount / (double)workload.size();
