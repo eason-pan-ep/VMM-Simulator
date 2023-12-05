@@ -260,11 +260,11 @@ private:
         std::cout << "Total Access: " << this->counters["Total Access Count"]  << " times" << "\n";
         //std::cout << "Repeated Addresses Rate: " << this->calculateRepeatingRate(workload) << "\n";
 
-//        std::cout << "Workload (VPN to access): \n[ ";
-//        for (int work: workload)
-//            std::cout << std::hex << std::setw(8) << std::setfill('0') << work << ", ";
-//
-//        std::cout << "]\n";
+        std::cout << "Workload (VPN to access): \n[ ";
+        for (int work: workload)
+            std::cout << std::hex << std::setw(8) << std::setfill('0') << work << ", ";
+
+        std::cout << "]\n";
 
     }
 
