@@ -14,11 +14,11 @@ void helperInfo(){
     std::cout << "- Mode: console\n";
     std::cout << "- Sample Size: 1\n";
     std::cout << "---------------------------------------------------------------------------------------------------------\n";
-    std::cout << "The simulator takes up to 8 different parameters at listed below: \n";
+    std::cout << "The simulator takes up to 8 different parameters as listed below: \n";
     std::cout << "   -h: helper info\n";
     std::cout << "   -w: workload type, default is random, the other option is game\n";
     std::cout << "   -T: TLB size, default is 64, takes up to 1024, please make sure it can divide the page size (default=4)\n";
-    std::cout << "   -m: memory size, default is 8192, suggesting not make it greater than the default, please make sure it can divide the page size (default=4)\n";
+    std::cout << "   -m: memory size, default is 8192, please make sure it can divide the page size (default=4)\n";
     std::cout << "   -p: page size, default is 4, takes up to 64, please make sure it can be divided by the memory size and page table size (default=8192)\n";
     std::cout << "   -P: page table size, default is 8192, please make sure it can be divided by the memory size and page size (default=4)\n";
     std::cout << "   -n: total requests, default is 200, since every request may require to access up to 5 different addresses, make sure it's not too much to handle\n";
