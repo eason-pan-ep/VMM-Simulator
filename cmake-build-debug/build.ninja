@@ -195,37 +195,6 @@ build TLBTests: CXX_EXECUTABLE_LINKER__TLBTests_Debug CMakeFiles/TLBTests.dir/te
   TARGET_FILE = TLBTests
   TARGET_PDB = TLBTests.dbg
 
-# =============================================================================
-# Object build statements for EXECUTABLE target csvVMM
-
-
-#############################################
-# Order-only phony target for csvVMM
-
-build cmake_object_order_depends_target_csvVMM: phony || CMakeFiles/csvVMM.dir
-
-build CMakeFiles/csvVMM.dir/csv_VMM.cpp.o: CXX_COMPILER__csvVMM_unscanned_Debug /Users/easonpan/Documents/Gits/5600-vvm/csv_VMM.cpp || cmake_object_order_depends_target_csvVMM
-  DEP_FILE = CMakeFiles/csvVMM.dir/csv_VMM.cpp.o.d
-  FLAGS = -g -std=gnu++17 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk -fcolor-diagnostics
-  OBJECT_DIR = CMakeFiles/csvVMM.dir
-  OBJECT_FILE_DIR = CMakeFiles/csvVMM.dir
-
-
-# =============================================================================
-# Link build statements for EXECUTABLE target csvVMM
-
-
-#############################################
-# Link the executable csvVMM
-
-build csvVMM: CXX_EXECUTABLE_LINKER__csvVMM_Debug CMakeFiles/csvVMM.dir/csv_VMM.cpp.o
-  FLAGS = -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk
-  OBJECT_DIR = CMakeFiles/csvVMM.dir
-  POST_BUILD = :
-  PRE_LINK = :
-  TARGET_FILE = csvVMM
-  TARGET_PDB = csvVMM.dbg
-
 
 #############################################
 # Utility command for edit_cache
@@ -260,7 +229,7 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 #############################################
 # Folder: /Users/easonpan/Documents/Gits/5600-vvm/cmake-build-debug
 
-build all: phony 5600_vvm PTETests pageTableTests memoryTests TLBTests csvVMM
+build all: phony 5600_vvm PTETests pageTableTests memoryTests TLBTests
 
 # =============================================================================
 # Built-in targets
