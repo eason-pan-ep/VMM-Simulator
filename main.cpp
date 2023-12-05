@@ -14,6 +14,7 @@ void helperInfo(){
     std::cout << "- Mode: console\n";
     std::cout << "---------------------------------------------------------------------------------------------------------\n";
     std::cout << "The simulator takes up to 6 different parameters at listed below: \n";
+    std::cout << "   -h: helper info\n";
     std::cout << "   -w: workload type, default is random, the other option is game\n";
     std::cout << "   -T: TLB size, default is 64, takes up to 512, please make sure it can divide the page size (default=4)\n";
     std::cout << "   -m: memory size, default is 8192, suggesting not make it greater than the default, please make sure it can divide the page size (default=4)\n";
