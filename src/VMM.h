@@ -8,7 +8,8 @@
 #include <iostream>
 #include <iomanip>
 #include <cstdlib>
-#include <ctime>
+//#include <ctime>
+#include <random>
 #include "./PhysicalMemory/PhysicalMemory.h"
 #include "./PageTable/PageTable.h"
 #include "./TLB/TLB.h"
@@ -72,6 +73,9 @@ public:
      * @param totalRequests
      */
     void runSimulation(int totalRequests=10, std::string exportMode="console"){
+        if(totalRequests < 1 ){
+            throw std::invalid_argument("Total Request Count should be a positive integer\n");
+        }
         std::vector<int> workload;
         //generate different type of workload based on input
         if("random" == this->workloadType){ // random workload
@@ -131,7 +135,10 @@ private:
      * @return a vector of VPNs
      */
     std::vector<int> generateRandomWorkLoad(int totalRequests){
-        std::srand(std::time(nullptr)); //initialize a seed
+        //initialize a random seed
+        auto seed = std::chrono::high_resolution_clock ::now().time_since_epoch().count();
+        std::mt19937 generator(seed);
+
         if(totalRequests < 0 ){
             throw std::invalid_argument("Total Request Count should be a positive integer\n");
         }
@@ -140,12 +147,14 @@ private:
 
         for(int i = 0; i < totalRequests; i++){
             //random pick number of chunks adding to workload
-            chunks.push_back(std::rand() % (MAX_CHUNK + 1));
+            std::uniform_int_distribution<int> randomTrunk(0, MAX_CHUNK);
+            chunks.push_back(randomTrunk(generator));
         }
         // randomly add accessing address to workload list
         for( int chunkCount : chunks){
             for(int i = 0; i < chunkCount; i++){
-                workload.push_back(std::rand() % (this->pageTableSize + 1) / this->pageSize); //random address
+                std::uniform_int_distribution<int> randomPage(0, this->pageTableSize / this->pageSize);
+                workload.push_back(randomPage(generator)); //random address
                 this->counters["Total Access Count"] += 1;
             }
         }
@@ -159,8 +168,11 @@ private:
      * @return a vector of VPNs
      */
     std::vector<int> generateGameWorkLoad(int totalRequests){
-        std::srand(std::time(nullptr)); //initialize a seed
-        if(totalRequests < 0 ){
+        //initialize a random seed
+        auto seed = std::chrono::high_resolution_clock ::now().time_since_epoch().count();
+        std::mt19937 generator(seed);
+
+        if(totalRequests < 1 ){
             throw std::invalid_argument("Total Request Count should be a positive integer\n");
         }
         std::vector<int> chunks;
@@ -168,20 +180,23 @@ private:
 
         for(int i = 0; i < totalRequests; i++){
             //random pick number of chunks adding to workload
-            chunks.push_back(std::rand() % (MAX_CHUNK + 1));
+            std::uniform_int_distribution<int> randomTrunk(0, MAX_CHUNK);
+            chunks.push_back(randomTrunk(generator));
         }
         // randomly add accessing address to workload list with 80% of the addresses are repeated
         for( int chunkCount : chunks){
             for(int i = 0; i < chunkCount; i++){
-                if(std::rand() % 100 < 80){ // 80% of the addresses are repeated
+                std::uniform_int_distribution<int> randomPage(0, this->pageTableSize / this->pageSize);
+                if(randomPage(generator) % 100 < 80){ // 80% of the addresses are repeated
                     if(workload.empty()){
-                        workload.push_back(std::rand() % (this->pageTableSize + 1) / this->pageSize); //random address
+                        workload.push_back(randomPage(generator)); //random address
                     }else{
-                        workload.push_back(workload.at(std::rand() % workload.size()));
+                        std::uniform_int_distribution<int> randomExistWork(0, workload.size() - 1);
+                        workload.push_back(workload.at(randomExistWork(generator)));
                     }
 
                 }else{
-                    workload.push_back(std::rand() % (this->pageTableSize + 1) / this->pageSize); //random address
+                    workload.push_back(randomPage(generator)); //random address
                 }
                 this->counters["Total Access Count"] += 1;
             }
