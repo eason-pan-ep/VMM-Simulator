@@ -115,8 +115,11 @@ private:
         for(auto& pair : this->buffer){
             keys.push_back(pair.first);
         }
-        std::srand(std::time(nullptr));
-        int removeIndex = std::rand() % (keys.size() + 1);
+        //initialize a random seed
+        auto seed = std::chrono::high_resolution_clock ::now().time_since_epoch().count();
+        std::mt19937 generator(seed);
+        std::uniform_int_distribution<int> randomIndex(0, keys.size() - 1);
+        int removeIndex = randomIndex(generator);
         return keys.at(removeIndex);
     }
 

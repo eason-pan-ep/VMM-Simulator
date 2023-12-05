@@ -129,6 +129,7 @@ public:
 
 
 private:
+
     /**
      * Generate a random workload
      * @param totalRequests
@@ -138,25 +139,16 @@ private:
         //initialize a random seed
         auto seed = std::chrono::high_resolution_clock ::now().time_since_epoch().count();
         std::mt19937 generator(seed);
+        std::uniform_int_distribution<int> randomVPN(1, this->pageTableSize / this->pageSize + 1);
 
         if(totalRequests < 0 ){
             throw std::invalid_argument("Total Request Count should be a positive integer\n");
         }
-        std::vector<int> chunks;
         std::vector<int> workload;
-
         for(int i = 0; i < totalRequests; i++){
-            //random pick number of chunks adding to workload
-            std::uniform_int_distribution<int> randomTrunk(0, MAX_CHUNK);
-            chunks.push_back(randomTrunk(generator));
-        }
-        // randomly add accessing address to workload list
-        for( int chunkCount : chunks){
-            for(int i = 0; i < chunkCount; i++){
-                std::uniform_int_distribution<int> randomPage(0, this->pageTableSize / this->pageSize);
-                workload.push_back(randomPage(generator)); //random address
-                this->counters["Total Access Count"] += 1;
-            }
+            //random pick a VPN adding to workload
+            workload.push_back(randomVPN(generator)); //random address
+            this->counters["Total Access Count"] += 1;
         }
         return workload;
     }
@@ -169,38 +161,32 @@ private:
      */
     std::vector<int> generateGameWorkLoad(int totalRequests){
         //initialize a random seed
-        auto seed = std::chrono::high_resolution_clock ::now().time_since_epoch().count();
-        std::mt19937 generator(seed);
+        auto now = std::chrono::high_resolution_clock ::now();
+        auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
+        std::mt19937 generator(nanoseconds);
+        std::uniform_int_distribution<int> randomPage(1, this->pageTableSize / this->pageSize + 1);
 
         if(totalRequests < 1 ){
             throw std::invalid_argument("Total Request Count should be a positive integer\n");
         }
-        std::vector<int> chunks;
         std::vector<int> workload;
 
-        for(int i = 0; i < totalRequests; i++){
-            //random pick number of chunks adding to workload
-            std::uniform_int_distribution<int> randomTrunk(0, MAX_CHUNK);
-            chunks.push_back(randomTrunk(generator));
-        }
         // randomly add accessing address to workload list with 80% of the addresses are repeated
-        for( int chunkCount : chunks){
-            for(int i = 0; i < chunkCount; i++){
-                std::uniform_int_distribution<int> randomPage(0, this->pageTableSize / this->pageSize);
-                if(randomPage(generator) % 100 < 80){ // 80% of the addresses are repeated
-                    if(workload.empty()){
-                        workload.push_back(randomPage(generator)); //random address
-                    }else{
-                        std::uniform_int_distribution<int> randomExistWork(0, workload.size() - 1);
-                        workload.push_back(workload.at(randomExistWork(generator)));
-                    }
 
-                }else{
+        for(int i = 0; i < totalRequests; i++){
+            if(randomPage(generator) % 100 < 80){ // 80% of the addresses are repeated
+                if(workload.empty()){
                     workload.push_back(randomPage(generator)); //random address
+                }else{
+                    std::uniform_int_distribution<int> randomExistWork(0, workload.size() - 1);
+                    workload.push_back(workload.at(randomExistWork(generator)));
                 }
-                this->counters["Total Access Count"] += 1;
+            }else{
+                workload.push_back(randomPage(generator)); //random address
             }
+            this->counters["Total Access Count"] += 1;
         }
+
         return workload;
     }
 
@@ -257,7 +243,7 @@ private:
      */
     void CSVFriendlyResults(){
         this->calculateTime();
-        std::cout << this->workloadType << "," << this->counters["Total Access Count"] << "," << this->repeatingRate << "," << this->TLBReplacePolicy << "," << this->tlb->getSize() << "," << this->counters["TLB Hit"] << "," << this->counters["TLB Miss"] << "," << (double)this->counters["TLB Hit"] / (double)this->counters["Total Access Count"] << "," << this->counters["Page Fault Count"] << "," << (double)this->counters["Page Fault Count"] / (double)(this->counters["Total Access Count"]) << "," << this->counters["TLB Access Count"] << "," << this->counters["Memory Access Count"] << "," << this->counters["TLB Time"] + this->counters["Memory Time"] << "," << this->counters["TLB Time"] << "," << this->counters["Memory Time"] << "\n";
+        std::cout << this->workloadType << "," << this->counters["Total Access Count"] << "," << this->TLBReplacePolicy << "," << this->tlb->getSize() << "," << this->counters["TLB Hit"] << "," << this->counters["TLB Miss"] << "," << (double)this->counters["TLB Hit"] / (double)this->counters["Total Access Count"] << "," << this->counters["Page Fault Count"] << "," << (double)this->counters["Page Fault Count"] / (double)(this->counters["Total Access Count"]) << "," << this->counters["TLB Access Count"] << "," << this->counters["Memory Access Count"] << "," << this->counters["TLB Time"] + this->counters["Memory Time"] << "," << this->counters["TLB Time"] << "," << this->counters["Memory Time"] << "\n";
 
     }
 
@@ -270,13 +256,13 @@ private:
         std::cout << "----------- Workload Summary -----------\n";
         std::cout << "Workload Type: " << this->workloadType << "\n";
         std::cout << "Total Access: " << this->counters["Total Access Count"]  << " times" << "\n";
-        std::cout << "Repeated Addresses Rate: " << this->repeatingRate << "\n";
+        //std::cout << "Repeated Addresses Rate: " << this->calculateRepeatingRate(workload) << "\n";
 
-        std::cout << "Workload (VPN to access): \n[ ";
-        for (int work: workload)
-            std::cout << std::hex << std::setw(8) << std::setfill('0') << work << ", ";
-
-        std::cout << "]\n";
+//        std::cout << "Workload (VPN to access): \n[ ";
+//        for (int work: workload)
+//            std::cout << std::hex << std::setw(8) << std::setfill('0') << work << ", ";
+//
+//        std::cout << "]\n";
 
     }
 
@@ -310,9 +296,9 @@ private:
             }
         }
         int repeatingCount = 0;
-        for(auto const& [key, val] : counter){
+        for(auto& [key, val] : counter){
             if(val > 1){
-                repeatingCount += val;
+                repeatingCount += val - 1;
             }
         }
         return (double)repeatingCount / (double)workload.size();
