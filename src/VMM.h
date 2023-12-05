@@ -165,6 +165,7 @@ private:
         auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
         std::mt19937 generator(nanoseconds);
         std::uniform_int_distribution<int> randomPage(1, this->pageTableSize / this->pageSize + 1);
+        std::uniform_int_distribution<int> randomProportion(1, 100);
 
         if(totalRequests < 1 ){
             throw std::invalid_argument("Total Request Count should be a positive integer\n");
@@ -174,7 +175,7 @@ private:
         // randomly add accessing address to workload list with 80% of the addresses are repeated
 
         for(int i = 0; i < totalRequests; i++){
-            if(randomPage(generator) % 100 < 80){ // 80% of the addresses are repeated
+            if(randomProportion(generator) % 100 < 80){ // 80% of the addresses are repeated
                 if(workload.empty()){
                     workload.push_back(randomPage(generator)); //random address
                 }else{
