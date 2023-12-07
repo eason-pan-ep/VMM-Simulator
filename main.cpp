@@ -16,7 +16,7 @@ void helperInfo(){
     std::cout << "---------------------------------------------------------------------------------------------------------\n";
     std::cout << "The simulator takes up to 8 different parameters as listed below: \n";
     std::cout << "   -h: helper info\n";
-    std::cout << "   -w: workload type, default is random, the other option is game\n";
+    std::cout << "   -w: workload type, default is random, the other 2 options are game and ml\n";
     std::cout << "   -T: TLB size, default is 64, takes up to 1024, please make sure it can divide the page size (default=4)\n";
     std::cout << "   -m: memory size, default is 8192, please make sure it can divide the page size (default=4)\n";
     std::cout << "   -p: page size, default is 4, takes up to 64, please make sure it can be divided by the memory size and page table size (default=8192)\n";
@@ -49,14 +49,14 @@ int main(int argc, char *argv[]){
         // workload type
         if(strcmp(argv[i], "-w") == 0){
             if(i + 1 < argc){
-                if(strcmp(argv[i+1], "random") == 0 || strcmp(argv[i+1], "game") == 0){
+                if(strcmp(argv[i+1], "random") == 0 || strcmp(argv[i+1], "game") == 0 || strcmp(argv[i+1], "ml") == 0 ){
                     workloadType = argv[i+1];
                 }else{
-                    std::cout << "Invalid workload type, please use random or game\n";
+                    std::cout << "Invalid workload type, please use random, game or ml\n";
                     return 1;
                 }
             }else{
-                std::cout << "Invalid workload type, please use random or game\n";
+                std::cout << "Invalid workload type, please use random, game or ml\n";
                 return 1;
             }
         }

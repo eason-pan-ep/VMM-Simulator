@@ -83,6 +83,10 @@ public:
             workload = this->generateRandomWorkLoad(totalRequests);
         }else if("game" == this->workloadType){ // game workload
             workload = this->generateGameWorkLoad(totalRequests);
+        }else if("ml" == this->workloadType) { // machine learning workload
+            workload = this->generateMLWorkload(totalRequests);
+        }else{
+            throw std::invalid_argument("Invalid workload type, please use random, game or ml\n");
         }
         // store repeated addresses rate
         this->repeatingRate = this->calculateRepeatingRate(workload);
@@ -131,6 +135,129 @@ public:
 
 private:
 
+
+
+    /**
+     * Print out the result
+     */
+    void printResult(){
+        std::cout << "================== Result ==================\n";
+        std::cout << "TLB Replacement Policy: " << this->TLBReplacePolicy << "\n";
+        std::cout << "TLB Size: " << std::dec << this->tlb->getSize() << " entries" << "\n";
+        std::cout << "----------- TLB Hit Rate -----------\n";
+        std::cout << "TLB Hit Count: " << this->counters["TLB Hit"] << "\n";
+        std::cout << "TLB Miss Count: " << this->counters["TLB Miss"] << "\n";
+        std::cout << "TLB Hit Rate: " << (double)this->counters["TLB Hit"] / (double)this->counters["Total Access Count"] << "\n";
+        std::cout << "----------- Page Fault Rate -----------\n";
+        std::cout << "Page Fault Count: " << this->counters["Page Fault Count"] << "\n";
+        std::cout << "Page Fault Rate: " << (double)this->counters["Page Fault Count"] / (double)this->counters["Total Access Count"] << "\n";
+
+        //calculate the total time based on access count and speed factors
+        this->calculateTime();
+
+        int totalTime = this->counters["TLB Time"] + this->counters["Memory Time"];
+        std::cout << "----------- Total Time -----------\n";
+        std::cout << "Speed Factors -- " << "TLB Speed : Memory Speed = " << this->speedFactors["Memory"] << " : " << this->speedFactors["Level 1 TLB"] <<"\n";
+        std::cout << "TLB Access Count: " << this->counters["TLB Access Count"] << "\n";
+        std::cout << "Memory Access Count: " << this->counters["Memory Access Count"] << "\n";
+        std::cout << "Total Time: " << totalTime << "\n";
+        std::cout << "TLB Time: " << this->counters["TLB Time"] << "\n";
+        std::cout << "Memory Time: " << this->counters["Memory Time"] << "\n";
+
+        std::cout << "------------------------------------------\n";
+    }
+
+    /**
+     * Calculate the total time based on access count and speed factors
+     */
+    void calculateTime(){
+        int TLBTime = 0;
+        int memoryTime = 0;
+        for(auto const& [key, val] : this->counters){
+            if("TLB Access Count" == key){
+                TLBTime += val * this->speedFactors["Level 1 TLB"];
+            }else if("Memory Access Count" == key){
+                memoryTime += val * this->speedFactors["Memory"];
+            }
+        }
+        this->counters["TLB Time"] = TLBTime;
+        this->counters["Memory Time"] = memoryTime;
+    }
+
+
+
+    /**
+     * Print out the result in CSV friendly format
+     * the columns are:
+     * Workload Type, Total Access Count, Repeated Addresses Rate, TLB Replacement Policy, TLB Size, TLB Hit Count, TLB Miss Count, TLB Hit Rate, Page Fault Count, Page Fault Rate, TLB Access Count, Memory Access Count, Total Time, TLB Time, Memory Time
+     */
+    void CSVFriendlyResults(){
+        this->calculateTime();
+        std::cout << this->workloadType << "," << this->counters["Total Access Count"] << "," << this->TLBReplacePolicy << "," << this->tlb->getSize() << "," << this->counters["TLB Hit"] << "," << this->counters["TLB Miss"] << "," << (double)this->counters["TLB Hit"] / (double)this->counters["Total Access Count"] << "," << this->counters["Page Fault Count"] << "," << (double)this->counters["Page Fault Count"] / (double)(this->counters["Total Access Count"]) << "," << this->counters["TLB Access Count"] << "," << this->counters["Memory Access Count"] << "," << this->counters["TLB Time"] + this->counters["Memory Time"] << "," << this->counters["TLB Time"] << "," << this->counters["Memory Time"] << "\n";
+    }
+
+
+    /**
+     * Print out the workload
+     * @param workload
+     */
+    void printWorkLoad(std::vector<int> workload){
+        std::cout << "----------- Workload Summary -----------\n";
+        std::cout << "Workload Type: " << this->workloadType << "\n";
+        std::cout << "Total Access: " << this->counters["Total Access Count"]  << " times" << "\n";
+        //std::cout << "Repeated Addresses Rate: " << this->calculateRepeatingRate(workload) << "\n";
+
+        std::cout << "Workload (VPN to access): \n[ ";
+        for (int work: workload)
+            std::cout << std::hex << std::setw(8) << std::setfill('0') << work << ", ";
+        std::cout << "]\n";
+    }
+
+
+
+    /**
+     * Mimicing translation
+     * @param VPN
+     * @return PFN, if the memory is full return -1
+     */
+    int translate(){
+        int PFN = this->physicalMemory->findOneChunk();
+        if(-1 == PFN){
+            return -1;
+        }
+        this->counters["Memory Access Count"] += 1;
+        return PFN;
+    }
+
+
+
+    /**
+     * Calculate the repeating rate of the workload
+     * @param workload
+     * @return the memory access address repeating rate
+     */
+    double calculateRepeatingRate(std::vector<int> workload){
+        std::unordered_map<int, int> counter;
+        for(int VPN : workload){
+            if(counter.find(VPN) == counter.end()){
+                counter.insert({VPN, 1});
+            }else{
+                counter[VPN] += 1;
+            }
+        }
+        int repeatingCount = 0;
+        for(auto& [key, val] : counter){
+            if(val > 1){
+                repeatingCount += val - 1;
+            }
+        }
+        return (double)repeatingCount / (double)workload.size();
+    }
+
+
+    //*********** Workload Generators ***********//
+
+
     /**
      * Generate a random workload
      * @param totalRequests
@@ -153,6 +280,7 @@ private:
         }
         return workload;
     }
+
 
 
     /**
@@ -193,118 +321,37 @@ private:
     }
 
 
+
     /**
-     * Print out the result
+     * Generate a workload mimicking machine learning - matrix multiplication
+     * @param totalRequests
+     * @return a vector of VPNs
      */
-    void printResult(){
-        std::cout << "================== Result ==================\n";
-        std::cout << "TLB Replacement Policy: " << this->TLBReplacePolicy << "\n";
-        std::cout << "TLB Size: " << std::dec << this->tlb->getSize() << " entries" << "\n";
-        std::cout << "----------- TLB Hit Rate -----------\n";
-        std::cout << "TLB Hit Count: " << this->counters["TLB Hit"] << "\n";
-        std::cout << "TLB Miss Count: " << this->counters["TLB Miss"] << "\n";
-        std::cout << "TLB Hit Rate: " << (double)this->counters["TLB Hit"] / (double)this->counters["Total Access Count"] << "\n";
-        std::cout << "----------- Page Fault Rate -----------\n";
-        std::cout << "Page Fault Count: " << this->counters["Page Fault Count"] << "\n";
-        std::cout << "Page Fault Rate: " << (double)this->counters["Page Fault Count"] / (double)this->counters["Total Access Count"] << "\n";
+    std::vector<int> generateMLWorkload(int totalRequests){
+        //initialize a random seed
+        auto now = std::chrono::high_resolution_clock ::now();
+        auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
+        std::mt19937 generator(nanoseconds);
+        // 3 generators for two matrix
+        std::uniform_int_distribution<int> matrix_A_random(1, (this->pageTableSize / this->pageSize) / 2); //for matrix A
+        std::uniform_int_distribution<int> matrix_B_random((this->pageTableSize / this->pageSize) / 2 + 1, this->pageTableSize / this->pageSize + 1); // for matrix B
+        std::uniform_int_distribution<int> matrix_random(0, 1); // randomly pick a matrix
 
-        //calculate the total time based on access count and speed factors
-        this->calculateTime();
-
-        int totalTime = this->counters["TLB Time"] + this->counters["Memory Time"];
-        std::cout << "----------- Total Time -----------\n";
-        std::cout << "Speed Factors -- " << "TLB Speed : Memory Speed = " << this->speedFactors["Memory"] << " : " << this->speedFactors["Level 1 TLB"] <<"\n";
-        std::cout << "TLB Access Count: " << this->counters["TLB Access Count"] << "\n";
-        std::cout << "Memory Access Count: " << this->counters["Memory Access Count"] << "\n";
-        std::cout << "Total Time: " << totalTime << "\n";
-        std::cout << "TLB Time: " << this->counters["TLB Time"] << "\n";
-        std::cout << "Memory Time: " << this->counters["Memory Time"] << "\n";
-
-        std::cout << "------------------------------------------\n";
-    }
-
-
-    void calculateTime(){
-        int TLBTime = 0;
-        int memoryTime = 0;
-        for(auto const& [key, val] : this->counters){
-            if("TLB Access Count" == key){
-                TLBTime += val * this->speedFactors["Level 1 TLB"];
-            }else if("Memory Access Count" == key){
-                memoryTime += val * this->speedFactors["Memory"];
-            }
+        std::vector<int> workload;
+        for(int i = 0; i < totalRequests; i++){
+            // picking two random VPN from each matrix
+            int VPN_A = matrix_A_random(generator);
+            int VPN_B = matrix_B_random(generator);
+            // randomly pick a VPN from the two VPNs
+            int VPN = matrix_random(generator) == 0 ? VPN_A : VPN_B;
+            workload.push_back(VPN_A);
+            workload.push_back(VPN_B);
+            workload.push_back(VPN);
+            this->counters["Total Access Count"] += 3;
         }
-        this->counters["TLB Time"] = TLBTime;
-        this->counters["Memory Time"] = memoryTime;
+        return workload;
     }
 
-    /**
-     * Print out the result in CSV friendly format
-     * the columns are:
-     * Workload Type, Total Access Count, Repeated Addresses Rate, TLB Replacement Policy, TLB Size, TLB Hit Count, TLB Miss Count, TLB Hit Rate, Page Fault Count, Page Fault Rate, TLB Access Count, Memory Access Count, Total Time, TLB Time, Memory Time
-     */
-    void CSVFriendlyResults(){
-        this->calculateTime();
-        std::cout << this->workloadType << "," << this->counters["Total Access Count"] << "," << this->TLBReplacePolicy << "," << this->tlb->getSize() << "," << this->counters["TLB Hit"] << "," << this->counters["TLB Miss"] << "," << (double)this->counters["TLB Hit"] / (double)this->counters["Total Access Count"] << "," << this->counters["Page Fault Count"] << "," << (double)this->counters["Page Fault Count"] / (double)(this->counters["Total Access Count"]) << "," << this->counters["TLB Access Count"] << "," << this->counters["Memory Access Count"] << "," << this->counters["TLB Time"] + this->counters["Memory Time"] << "," << this->counters["TLB Time"] << "," << this->counters["Memory Time"] << "\n";
-
-    }
-
-
-    /**
-     * Print out the workload
-     * @param workload
-     */
-    void printWorkLoad(std::vector<int> workload){
-        std::cout << "----------- Workload Summary -----------\n";
-        std::cout << "Workload Type: " << this->workloadType << "\n";
-        std::cout << "Total Access: " << this->counters["Total Access Count"]  << " times" << "\n";
-        //std::cout << "Repeated Addresses Rate: " << this->calculateRepeatingRate(workload) << "\n";
-
-        std::cout << "Workload (VPN to access): \n[ ";
-        for (int work: workload)
-            std::cout << std::hex << std::setw(8) << std::setfill('0') << work << ", ";
-
-        std::cout << "]\n";
-
-    }
-
-    /**
-     * Mimicing translation
-     * @param VPN
-     * @return PFN, if the memory is full return -1
-     */
-    int translate(){
-        int PFN = this->physicalMemory->findOneChunk();
-        if(-1 == PFN){
-            return -1;
-        }
-        this->counters["Memory Access Count"] += 1;
-        return PFN;
-    }
-
-
-    /**
-     * Calculate the repeating rate of the workload
-     * @param workload
-     * @return the memory access address repeating rate
-     */
-    double calculateRepeatingRate(std::vector<int> workload){
-        std::unordered_map<int, int> counter;
-        for(int VPN : workload){
-            if(counter.find(VPN) == counter.end()){
-                counter.insert({VPN, 1});
-            }else{
-                counter[VPN] += 1;
-            }
-        }
-        int repeatingCount = 0;
-        for(auto& [key, val] : counter){
-            if(val > 1){
-                repeatingCount += val - 1;
-            }
-        }
-        return (double)repeatingCount / (double)workload.size();
-    }
 
 
 
