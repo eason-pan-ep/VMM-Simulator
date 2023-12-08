@@ -11,7 +11,8 @@
 
 class TLB {
 private:
-    std::unordered_map<int, int> usageTracking; // VPN, lruTimer
+    std::unordered_map<int, int> usageTracking; // <VPN, lruTimer> for LRU
+    std::unordered_map<int, int> frequencyTracking; // <VPN, frequency> for LFU
     std::unordered_map<int, PTE*> buffer; // VPN, PTE
     int size;
     int lruTimer;
@@ -75,6 +76,7 @@ public:
             return -1; // TLB Miss
         }else{
             this->updateLRUEntry(VPN);
+            this->updateLFUEntry(VPN);
         }
         return 1; //TLB Hit
     }
@@ -100,13 +102,14 @@ private:
         }else if(mode == "lru"){
             removeVPN = this->lruPolicy();
         }else if(mode == "lfu"){
-
+            removeVPN = this->lfuPolicy();
         }else{
             throw std::invalid_argument("Invalid replacement policy\n");
         }
 
         this->buffer.erase(removeVPN);
         this->deleteLRUEntry(removeVPN);
+        this->deleteLFUEntry(removeVPN);
         this->buffer.insert({VPN, newPTE});
 
         return 1;
@@ -133,6 +136,29 @@ private:
      */
     void deleteLRUEntry(int VPN){
         this->usageTracking.erase(VPN);
+    }
+
+
+
+    /**
+     * Update the LFU entry in the frequencyTracking
+     * @param VPN
+     */
+    void updateLFUEntry(int VPN){
+        if(this->frequencyTracking.find(VPN) == this->frequencyTracking.end()) {
+            this->frequencyTracking.insert({VPN, 1});
+        }else{
+            this->frequencyTracking[VPN] += 1;
+        }
+    }
+
+
+    /**
+     * Delete the LFU entry in the frequencyTracking
+     * @param VPN
+     */
+    void deleteLFUEntry(int VPN){
+        this->frequencyTracking.erase(VPN);
     }
 
 
@@ -179,7 +205,13 @@ private:
      * @return the VPN of the selected entry to delete
      */
     int lfuPolicy(){
-        return 0;
+        std::pair<int, int> leastFrequent = {-1, INT_MAX}; //<VPN, frequency>
+        for(auto pair : this->frequencyTracking){
+            if(pair.second < leastFrequent.second){
+                leastFrequent = pair;
+            }
+        }
+        return leastFrequent.first;
     }
 };
 
