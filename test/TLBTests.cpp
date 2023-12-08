@@ -56,9 +56,34 @@ int main(){
     test2->lookup(1);
     test2->lookup(3);
     test2->lookup(1);
-    test2->addEntry(4, new PTE(4), "lru");
+    test2->lookup(2);
+    test2->addEntry(4, new PTE(4), "lru"); // expected to replace 3
     test2->lookup(4);
     test2->printTLB();
+    delete(test2);
+
+
+    std::cout << "=========== Test LFU policy =========== \n";
+    TLB* test3 = new TLB(3);
+    test3->addEntry(1, new PTE(1), "lfu");
+    test3->lookup(1);
+    test3->addEntry(2, new PTE(2), "lfu");
+    test3->lookup(2);
+    test3->addEntry(3, new PTE(3), "lfu");
+    test3->lookup(3);
+    test3->printTLB();
+    std::cout << "------ Replaced one entry ------ \n";
+    test3->lookup(1);
+    test3->lookup(1);
+    test3->lookup(1);
+    test3->lookup(1);
+    test3->lookup(1);
+    test3->lookup(3);
+    test3->addEntry(4, new PTE(4), "lfu"); // expected to replace 2
+    test3->printTLB();
+    delete(test3);
+
+
 
 
 

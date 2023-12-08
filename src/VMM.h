@@ -29,6 +29,34 @@ private:
 
 public:
     VMM(int TLBSize=64, std::string workloadType="random", std::string TLBReplacePolicy="random", int memorySize=8192, int pageSize=4, int pageTableSize=8192, int TLBTotalLevels=1){
+        if(TLBSize > 1024){
+            throw std::invalid_argument("TLB size greater than 1024 is too ideal.\n");
+        }
+        if(workloadType != "random" && workloadType != "game" && workloadType != "ml"){
+            throw std::invalid_argument("Invalid workload type, please use random, game or ml\n");
+        }
+        if(TLBReplacePolicy != "random" && TLBReplacePolicy != "lru" && TLBReplacePolicy != "lfu"){
+            throw std::invalid_argument("Invalid TLB replacement policy, please use random, lru or lfu\n");
+        }
+        if(memorySize < 1){
+            throw std::invalid_argument("Memory size should be greater than 0\n");
+        }
+        if(pageSize < 1){
+            throw std::invalid_argument("Page size should be greater than 0\n");
+        }
+        if(pageTableSize < 1){
+            throw std::invalid_argument("Page table size should be greater than 0\n");
+        }
+        if(TLBTotalLevels < 1){
+            throw std::invalid_argument("TLB total levels should be greater than 0\n");
+        }
+        if(pageTableSize % pageSize != 0){
+            throw std::invalid_argument("Page table size should be dividable by page size\n");
+        }
+        if(memorySize % pageSize != 0){
+            throw std::invalid_argument("Memory size should be dividable by page size\n");
+        }
+
         this->physicalMemory = new PhysicalMemory(memorySize, pageSize);
         this->pageTable = new PageTable(pageTableSize, pageSize);
         this->tlb = new TLB(TLBSize, TLBTotalLevels);
@@ -72,6 +100,9 @@ public:
     void runSimulation(int totalRequests=10, std::string exportMode="console"){
         if(totalRequests < 1 ){
             throw std::invalid_argument("Total Request Count should be a positive integer\n");
+        }
+        if("console" != exportMode && "csv" != exportMode){
+            throw std::invalid_argument("Invalid mode, please use console or csv\n");
         }
         std::vector<int> workload;
         //generate different type of workload based on input

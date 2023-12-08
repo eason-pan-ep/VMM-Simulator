@@ -25,7 +25,7 @@ void helperInfo(){
     std::cout << "   -n: total requests, default is 200, since every request may require to access up to 5 different addresses, make sure it's not too much to handle\n";
     std::cout << "   -M: mode, default is console, the other option is csv\n";
     std::cout << "   -s: sample size, default is 1, only works in csv mode\n";
-    std::cout << "   -f: flushing policy, default is random, the other option is lru\n";
+    std::cout << "   -f: flushing policy, default is random, the other option are lru (Least Recent Used) and lfu (Least Frequent Used)\n";
 }
 
 
@@ -188,14 +188,14 @@ int main(int argc, char *argv[]){
         // flushing policy
         if(strcmp(argv[i], "-f") == 0){
             if(i + 1 < argc){
-                if(strcmp(argv[i+1], "random") == 0 || strcmp(argv[i+1], "lru") == 0){
+                if(strcmp(argv[i+1], "random") == 0 || strcmp(argv[i+1], "lru") == 0 || strcmp(argv[i+1], "lfu") == 0){
                     replacementPolicy = argv[i+1];
                 }else{
-                    std::cout << "Invalid flushing policy, please use random or lru\n";
+                    std::cout << "Invalid flushing policy, please use random, lru or lfu\n";
                     return 1;
                 }
             }else{
-                std::cout << "Invalid flushing policy, please use random or lru\n";
+                std::cout << "Invalid flushing policy, please use random, lru or lfu\n";
                 return 1;
             }
         }
