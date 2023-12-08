@@ -8,7 +8,6 @@
 #include <iostream>
 #include <iomanip>
 #include <cstdlib>
-//#include <ctime>
 #include <random>
 #include "./PhysicalMemory/PhysicalMemory.h"
 #include "./PageTable/PageTable.h"
@@ -18,7 +17,6 @@
 class VMM {
 private:
     const int GAME_PROPORTION = 80;
-    const int MAX_CHUNK = 5;
     int pageTableSize;
     int pageSize;
     PageTable* pageTable;
@@ -28,7 +26,6 @@ private:
     std::unordered_map<std::string, int> speedFactors; // how much a specific type of operation should multiply when calculating speed
     std::string TLBReplacePolicy; // the policy used to replace TLB entries
     std::string workloadType; // the type of workload
-    double repeatingRate; // the repeating rate of the workload, for logging purpose
 
 public:
     VMM(int TLBSize=64, std::string workloadType="random", std::string TLBReplacePolicy="random", int memorySize=8192, int pageSize=4, int pageTableSize=8192, int TLBTotalLevels=1){
@@ -39,7 +36,6 @@ public:
         this->pageSize = pageSize;
         this->TLBReplacePolicy = TLBReplacePolicy;
         this->workloadType = workloadType;
-        this->repeatingRate = 0.0;
 
         //initialize counters
         this->counters.insert({"TLB Hit", 0});
@@ -88,8 +84,6 @@ public:
         }else{
             throw std::invalid_argument("Invalid workload type, please use random, game or ml\n");
         }
-        // store repeated addresses rate
-        this->repeatingRate = this->calculateRepeatingRate(workload);
 
         for(int VPN : workload){
             if(-1 != this->tlb->lookup(VPN)){ //if it's a TLB hit
@@ -134,6 +128,22 @@ public:
 
 
 private:
+    //*********** Simulation Results Print out & related Helper Methods ***********//
+
+    /**
+     * Print out the workload
+     * @param workload
+     */
+        void printWorkLoad(std::vector<int> workload){
+            std::cout << "----------- Workload Summary -----------\n";
+            std::cout << "Workload Type: " << this->workloadType << "\n";
+            std::cout << "Total Access: " << this->counters["Total Access Count"]  << " times" << "\n";
+
+            std::cout << "Workload (VPN to access): \n[ ";
+            for (int work: workload)
+                std::cout << std::hex << std::setw(8) << std::setfill('0') << work << ", ";
+            std::cout << "]\n";
+        }
 
 
 
@@ -142,7 +152,7 @@ private:
      */
     void printResult(){
         std::cout << "================== Result ==================\n";
-        std::cout << "TLB Replacement Policy: " << this->TLBReplacePolicy << "\n";
+        std::cout << "TLB Flushing Policy: " << this->TLBReplacePolicy << "\n";
         std::cout << "TLB Size: " << std::dec << this->tlb->getSize() << " entries" << "\n";
         std::cout << "----------- TLB Hit Rate -----------\n";
         std::cout << "TLB Hit Count: " << this->counters["TLB Hit"] << "\n";
@@ -166,6 +176,8 @@ private:
 
         std::cout << "------------------------------------------\n";
     }
+
+
 
     /**
      * Calculate the total time based on access count and speed factors
@@ -197,26 +209,11 @@ private:
     }
 
 
-    /**
-     * Print out the workload
-     * @param workload
-     */
-    void printWorkLoad(std::vector<int> workload){
-        std::cout << "----------- Workload Summary -----------\n";
-        std::cout << "Workload Type: " << this->workloadType << "\n";
-        std::cout << "Total Access: " << this->counters["Total Access Count"]  << " times" << "\n";
-        //std::cout << "Repeated Addresses Rate: " << this->calculateRepeatingRate(workload) << "\n";
 
-        std::cout << "Workload (VPN to access): \n[ ";
-        for (int work: workload)
-            std::cout << std::hex << std::setw(8) << std::setfill('0') << work << ", ";
-        std::cout << "]\n";
-    }
-
-
+    //*********** Simulation Running Helper Methods ***********//
 
     /**
-     * Mimicing translation
+     * Mimicking translation
      * @param VPN
      * @return PFN, if the memory is full return -1
      */
@@ -231,31 +228,7 @@ private:
 
 
 
-    /**
-     * Calculate the repeating rate of the workload
-     * @param workload
-     * @return the memory access address repeating rate
-     */
-    double calculateRepeatingRate(std::vector<int> workload){
-        std::unordered_map<int, int> counter;
-        for(int VPN : workload){
-            if(counter.find(VPN) == counter.end()){
-                counter.insert({VPN, 1});
-            }else{
-                counter[VPN] += 1;
-            }
-        }
-        int repeatingCount = 0;
-        for(auto& [key, val] : counter){
-            if(val > 1){
-                repeatingCount += val - 1;
-            }
-        }
-        return (double)repeatingCount / (double)workload.size();
-    }
-
-
-    //*********** Workload Generators ***********//
+    //*********** Workload Generators Helper Methods ***********//
 
 
     /**

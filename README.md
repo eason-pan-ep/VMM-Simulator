@@ -36,6 +36,7 @@ Part of CS5600 - Computer Systems coursework
   - -n: total requests, default is 200, since every request may require to access up to 5 different addresses, make sure it's not too much to handle 
   - -M: mode, default is console, the other option is csv 
   - -s: sample size, default is 1, only works in csv mode
+  - -f: flushing policy, default is random, the other option is lru
 - default value of each parameters:
   - Workload Type: random
   - TLB Size: 64
@@ -45,3 +46,4 @@ Part of CS5600 - Computer Systems coursework
   - Page Table Size: 8192
   - Mode: console
   - Sample Size: 1
+  - Flushing Policy: random
