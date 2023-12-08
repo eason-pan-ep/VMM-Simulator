@@ -3,6 +3,11 @@ Part of CS5600 - Computer Systems coursework
 <br>Eason Pan, Fall 2023
 
 ## Key Features
+### Iteration 2 (see tag iteration-2)
+- LRU TLB flushing policy
+- LFU TLB flushing policy
+- ML workload, randomized matrix interaction (2 matrices, each takes half of the page table size)
+
 ### Iteration 1 (see tag iteration-1)
 - Standard VMM (page table + physical memory(free space))
 - Single-level TLB
