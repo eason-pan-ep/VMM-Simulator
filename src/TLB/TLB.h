@@ -5,16 +5,16 @@
 #ifndef INC_5600_VVM_TLB_H
 #define INC_5600_VVM_TLB_H
 #include <iostream>
-#include <cstdlib>
-#include <ctime>
-#include "TLBEntry.h"
+#include <random>
 #include "../PageTable/PTE.h"
 
 
 class TLB {
 private:
+    std::unordered_map<int, int> usageTracking; // VPN, lruTimer
     std::unordered_map<int, PTE*> buffer; // VPN, PTE
     int size;
+    int lruTimer;
     int level;
 
 public:
@@ -24,6 +24,7 @@ public:
         }
         this->size = size;
         this->level = level;
+        this->lruTimer = 0;
     }
 
     ~TLB(){
@@ -34,19 +35,24 @@ public:
      * Add a new entry, if the TLB if full, replace an existing one using the selected policy
      * @param VPN
      * @param newPTE
-     * @return opCount.
+     * @return 1 if success
      */
     int addEntry(int VPN, PTE* newPTE, std::string mode = "random"){
         if(newPTE == nullptr){
             throw std::invalid_argument("Can't add null PTE to TLB\n");
         }
+
         if(this->buffer.size() == this->size){ //TLB is full
-            return this->replace(VPN, newPTE);
+            this->replace(VPN, newPTE, mode);
+        }else{
+            this->buffer.insert({VPN, newPTE});
         }
-        this->buffer.insert({VPN, newPTE});
         return 1;
     }
 
+    /**
+     * Print the TLB
+     */
     void printTLB(){
         std::cout << "TLB Info: \n";
         std::cout << "TLB Size: " << this->size << "\n";
@@ -67,6 +73,8 @@ public:
     int lookup(int VPN){
         if(this->buffer.find(VPN) == this->buffer.end()){
             return -1; // TLB Miss
+        }else{
+            this->updateLRUEntry(VPN);
         }
         return 1; //TLB Hit
     }
@@ -83,28 +91,54 @@ private:
     /**
      * Remove an entry
      * @param VPN
-     * @return opCount
+     * @return 1 if success
      */
     int replace(int VPN, PTE* newPTE, std::string mode = "random"){
-        if(newPTE == nullptr){
-            throw std::invalid_argument("newPTE is null [TLB->replace()]\n");
-        }
-        int opCount = 0;
         int removeVPN = -1;
         if(mode == "random"){
             removeVPN = this->randomPolicy();
-            opCount += 1;
+        }else if(mode == "lru"){
+            removeVPN = this->lruPolicy();
+        }else if(mode == "lfu"){
+
+        }else{
+            throw std::invalid_argument("Invalid replacement policy\n");
         }
 
-
         this->buffer.erase(removeVPN);
-        opCount += 1;
-
+        this->deleteLRUEntry(removeVPN);
         this->buffer.insert({VPN, newPTE});
-        opCount += 1;
 
-        return opCount;
+        return 1;
     }
+
+
+    /**
+     * Update the LRU entry in the usageTracking
+     * @param VPN
+     */
+    void updateLRUEntry(int VPN){
+        if(this->usageTracking.find(VPN) == this->usageTracking.end()) {
+            this->usageTracking.insert({VPN, this->lruTimer});
+        }else{
+            this->usageTracking[VPN] = this->lruTimer;
+        }
+        this->lruTimer += 1;
+    }
+
+
+    /**
+     * Delete the LRU entry in the usageTracking
+     * @param VPN
+     */
+    void deleteLRUEntry(int VPN){
+        this->usageTracking.erase(VPN);
+    }
+
+
+
+    // ==================== Replacement/Flushing Policies ====================
+
 
     /**
      * random replacement policy
@@ -123,6 +157,30 @@ private:
         return keys.at(removeIndex);
     }
 
+
+    /**
+     * Least Recently Used replacement policy
+     * @return the VPN of the selected entry to delete
+     */
+    int lruPolicy(){
+        std::pair<int, int> earliest = {-1, INT_MAX}; //<VPN, lruTimer>
+        for(auto pair : this->usageTracking){
+            if(pair.second < earliest.second){
+                earliest = pair;
+            }
+        }
+        return earliest.first;
+    }
+
+
+
+    /**
+     * Least Frequently Used replacement policy
+     * @return the VPN of the selected entry to delete
+     */
+    int lfuPolicy(){
+        return 0;
+    }
 };
 
 

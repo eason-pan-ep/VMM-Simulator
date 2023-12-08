@@ -13,10 +13,11 @@ void helperInfo(){
     std::cout << "- Page Table Size: 8192\n";
     std::cout << "- Mode: console\n";
     std::cout << "- Sample Size: 1\n";
+    std::cout << "- Flushing Policy: random\n";
     std::cout << "---------------------------------------------------------------------------------------------------------\n";
-    std::cout << "The simulator takes up to 8 different parameters as listed below: \n";
+    std::cout << "The simulator takes up to 9 different parameters as listed below: \n";
     std::cout << "   -h: helper info\n";
-    std::cout << "   -w: workload type, default is random, the other option is game\n";
+    std::cout << "   -w: workload type, default is random, the other 2 options are game and ml\n";
     std::cout << "   -T: TLB size, default is 64, takes up to 1024, please make sure it can divide the page size (default=4)\n";
     std::cout << "   -m: memory size, default is 8192, please make sure it can divide the page size (default=4)\n";
     std::cout << "   -p: page size, default is 4, takes up to 64, please make sure it can be divided by the memory size and page table size (default=8192)\n";
@@ -24,6 +25,7 @@ void helperInfo(){
     std::cout << "   -n: total requests, default is 200, since every request may require to access up to 5 different addresses, make sure it's not too much to handle\n";
     std::cout << "   -M: mode, default is console, the other option is csv\n";
     std::cout << "   -s: sample size, default is 1, only works in csv mode\n";
+    std::cout << "   -f: flushing policy, default is random, the other option is lru\n";
 }
 
 
@@ -37,6 +39,7 @@ int main(int argc, char *argv[]){
     int pageTableSize = 8192;
     std::string mode = "console";
     int sampleSize = 1;
+    std::string replacementPolicy = "random";
 
 
     // parsing arguments
@@ -49,14 +52,14 @@ int main(int argc, char *argv[]){
         // workload type
         if(strcmp(argv[i], "-w") == 0){
             if(i + 1 < argc){
-                if(strcmp(argv[i+1], "random") == 0 || strcmp(argv[i+1], "game") == 0){
+                if(strcmp(argv[i+1], "random") == 0 || strcmp(argv[i+1], "game") == 0 || strcmp(argv[i+1], "ml") == 0 ){
                     workloadType = argv[i+1];
                 }else{
-                    std::cout << "Invalid workload type, please use random or game\n";
+                    std::cout << "Invalid workload type, please use random, game or ml\n";
                     return 1;
                 }
             }else{
-                std::cout << "Invalid workload type, please use random or game\n";
+                std::cout << "Invalid workload type, please use random, game or ml\n";
                 return 1;
             }
         }
@@ -182,7 +185,23 @@ int main(int argc, char *argv[]){
                 return 1;
             }
         }
+        // flushing policy
+        if(strcmp(argv[i], "-f") == 0){
+            if(i + 1 < argc){
+                if(strcmp(argv[i+1], "random") == 0 || strcmp(argv[i+1], "lru") == 0){
+                    replacementPolicy = argv[i+1];
+                }else{
+                    std::cout << "Invalid flushing policy, please use random or lru\n";
+                    return 1;
+                }
+            }else{
+                std::cout << "Invalid flushing policy, please use random or lru\n";
+                return 1;
+            }
+        }
     }
+
+
 
     // running simulation - console mode
     if(mode == "console"){
@@ -190,7 +209,7 @@ int main(int argc, char *argv[]){
         std::cout << "Virtual Memory Manager Simulation Starts\n";
         std::cout << "========================================\n";
         std::cout << "Initializing VMM Simulator..........\n";
-        VMM* vmm = new VMM(TLBSize, workloadType, "random", memorySize, pageSize, pageTableSize);
+        VMM* vmm = new VMM(TLBSize, workloadType, replacementPolicy, memorySize, pageSize, pageTableSize);
         std::cout << "Simulator Initialized\n";
         std::cout << "========================================\n";
         std::cout << "Running VMM Simulator..........\n";
@@ -200,9 +219,9 @@ int main(int argc, char *argv[]){
         std::cout << "*******************************************************************************\n";
     }else if(mode == "csv"){
         // running simulation - csv mode
-        std::cout << "#,Workload Type,Total Access Count,TLB Replacement Policy,TLB Size,TLB Hit Count,TLB Miss Count,TLB Hit Rate,Page Fault Count,Page Fault Rate,TLB Access Count,Memory Access Count,Total Time,TLB Time,Memory Time\n";
+        std::cout << "#,Workload Type,Total Access Count,TLB Flushing Policy,TLB Size,TLB Hit Count,TLB Miss Count,TLB Hit Rate,Page Fault Count,Page Fault Rate,TLB Access Count,Memory Access Count,Total Time,TLB Time,Memory Time\n";
         for(int i = 0; i < sampleSize; i++){
-            VMM* vmm = new VMM(TLBSize, workloadType, "random", memorySize, pageSize, pageTableSize);
+            VMM* vmm = new VMM(TLBSize, workloadType, replacementPolicy, memorySize, pageSize, pageTableSize);
             std::cout << i+1 << ","; // the number of the sample
             vmm->runSimulation(totalRequests, "csv");
             delete(vmm);

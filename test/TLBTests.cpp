@@ -3,7 +3,6 @@
 //
 #include <iostream>
 #include "../src/TLB/TLB.h"
-#include "../src/PageTable/PTE.h"
 
 int main(){
     int TEST_TLB_SIZE = 4;
@@ -42,6 +41,26 @@ int main(){
     std::cout << "Result: " << TLBT << "\n";
 
     delete(test);
+
+
+    std::cout << "=========== Test LRU policy =========== \n";
+    TLB* test2 = new TLB(3);
+    test2->addEntry(1, new PTE(1), "lru");
+    test2->lookup(1);
+    test2->addEntry(2, new PTE(2), "lru");
+    test2->lookup(2);
+    test2->addEntry(3, new PTE(3), "lru");
+    test2->lookup(3);
+    test2->printTLB();
+    std::cout << "------ Replaced one entry ------ \n";
+    test2->lookup(1);
+    test2->lookup(3);
+    test2->lookup(1);
+    test2->addEntry(4, new PTE(4), "lru");
+    test2->lookup(4);
+    test2->printTLB();
+
+
 
     return 0;
 
