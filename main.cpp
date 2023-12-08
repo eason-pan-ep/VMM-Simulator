@@ -15,7 +15,7 @@ void helperInfo(){
     std::cout << "- Sample Size: 1\n";
     std::cout << "- Flushing Policy: random\n";
     std::cout << "---------------------------------------------------------------------------------------------------------\n";
-    std::cout << "The simulator takes up to 8 different parameters as listed below: \n";
+    std::cout << "The simulator takes up to 9 different parameters as listed below: \n";
     std::cout << "   -h: helper info\n";
     std::cout << "   -w: workload type, default is random, the other 2 options are game and ml\n";
     std::cout << "   -T: TLB size, default is 64, takes up to 1024, please make sure it can divide the page size (default=4)\n";
